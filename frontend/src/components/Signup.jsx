@@ -21,7 +21,7 @@ export default function Signup() {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "https://notesapp-fvg3-rgqp1edlk-badal-sharmas-projects.vercel.app/addusers",
+        "https://notesapp-fvg3.vercel.app/addusers",
         formData
       );
       console.log(response.data);

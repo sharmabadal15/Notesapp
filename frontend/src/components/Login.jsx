@@ -24,7 +24,7 @@ export default function Login() {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:2000/login",
+        "https://notesapp-fvg3-rgqp1edlk-badal-sharmas-projects.vercel.app/login",
         formData
       );
       if (response && response.data && response.data.user) {

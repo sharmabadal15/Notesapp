@@ -36,7 +36,7 @@ export default function Caard() {
   const fetchNotes = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:2000/notes/${user.id}`
+        `https://notesapp-fvg3-rgqp1edlk-badal-sharmas-projects.vercel.app/notes/${user.id}`
       );
       setNotes(response.data);
     } catch (error) {
@@ -46,7 +46,7 @@ export default function Caard() {
 
   const addNote = async () => {
     try {
-      await axios.post("http://localhost:2000/notes", {
+      await axios.post("https://notesapp-fvg3-rgqp1edlk-badal-sharmas-projects.vercel.app/notes", {
         user_id: user.id,
         title: "New Note",
         content: newNote,

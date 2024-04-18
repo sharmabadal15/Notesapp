@@ -12,8 +12,8 @@ function App() {
       <Nav/>
       <Routes>
         <Route exact path="/" element={<Caard/>} />
-        <Route  path="https://notesapp-git-main-badal-sharmas-projects.vercel.app/signup" element={<Signup/>} />
-        <Route  path="https://notesapp-git-main-badal-sharmas-projects.vercel.app/login" element={<Login/>} />
+        <Route  path="/signup" element={<Signup/>} />
+        <Route  path="/login" element={<Login/>} />
       </Routes>
     </NextUIProvider>
   );

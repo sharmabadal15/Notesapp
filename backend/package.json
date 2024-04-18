@@ -1,6 +1,6 @@
 {
   "name": "server",
-  "version": "1",
+  "version": "1.0.0",
   "description": "This is a notesapp",
   "main": "api/server.js",
   "scripts": {

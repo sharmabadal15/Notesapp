@@ -1,4 +1,6 @@
 const { Pool } = require('pg');
+require('dotenv').config();
+const connectionString = process.env.DB_CONNECTION_STRING;
 
 // const pool = new Pool({
 //     user: 'default',
@@ -8,7 +10,7 @@ const { Pool } = require('pg');
 //     port: 5435,
 // });
 const pool = new Pool({
-  connectionString: "postgres://default:jfSIyqwR4K5E@ep-steep-resonance-a4v94rfr.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require" ,
+  connectionString,
 })
 
 pool.on('connect', () => {

@@ -1,12 +1,15 @@
 const { Pool } = require('pg');
 
+// const pool = new Pool({
+//     user: 'default',
+//     host: 'ep-steep-resonance-a4v94rfr-pooler.us-east-1.aws.neon.tech',
+//     database: 'verceldb',
+//     password: 'jfSIyqwR4K5E',
+//     port: 5435,
+// });
 const pool = new Pool({
-    user: 'default',
-    host: 'ep-steep-resonance-a4v94rfr-pooler.us-east-1.aws.neon.tech',
-    database: 'verceldb',
-    password: 'jfSIyqwR4K5E',
-    port: 5435,
-});
+  connectionString: "postgres://default:jfSIyqwR4K5E@ep-steep-resonance-a4v94rfr.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require" ,
+})
 
 pool.on('connect', () => {
     console.log('Connected to PostgreSQL database');

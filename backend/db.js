@@ -1,10 +1,10 @@
 const { Pool } = require('pg');
 
 const pool = new Pool({
-    user: 'airflow',
-    host: 'localhost',
-    database: 'airflow',
-    password: 'airflow',
+    user: 'default',
+    host: 'ep-steep-resonance-a4v94rfr-pooler.us-east-1.aws.neon.tech',
+    database: 'verceldb',
+    password: 'jfSIyqwR4K5E',
     port: 5435,
 });
 

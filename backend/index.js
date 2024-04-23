@@ -110,6 +110,48 @@ app.get("/notes/:user_id", async (req, res) => {
   }
 });
 
+app.delete("/notes/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const client = await pool.connect();
+    const result = await client.query("DELETE FROM notes WHERE id = $1", [id]);
+    client.release();
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Note not found" });
+    }
+
+    console.log("Note deleted with ID:", id);
+    res.status(200).json({ message: "Note deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting note:", err);
+    res.status(500).json({ message: "Error deleting note" });
+  }
+});
+app.put("/notes/:id", async (req, res) => {
+  const { id } = req.params;
+  const { title, content } = req.body;
+
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      "UPDATE notes SET title = $1, content = $2 WHERE id = $3",
+      [title, content, id]
+    );
+    client.release();
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Note not found" });
+    }
+
+    console.log("Note updated with ID:", id);
+    res.status(200).json({ message: "Note updated successfully" });
+  } catch (err) {
+    console.error("Error updating note:", err);
+    res.status(500).json({ message: "Error updating note" });
+  }
+});
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

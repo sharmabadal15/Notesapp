@@ -19,11 +19,13 @@ import { useAuth } from "../authentication/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function Caard() {
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const { isOpen, onOpen, onOpenChange ,onClose} = useDisclosure();
   const { isLoggedIn, user, logout } = useAuth(); // Include logout function from useAuth
   const navigate = useNavigate();
   const [notes, setNotes] = useState([]);
   const [newNote, setNewNote] = useState("");
+  const [deletingNoteId, setDeletingNoteId] = useState(null); // State to track note being deleted
+  const [editingNote, setEditingNote] = useState(null); // State to track the note being edited
 
   useEffect(() => {
     if (isLoggedIn && user) {
@@ -65,7 +67,37 @@ export default function Caard() {
     }
   };
 
-  
+  const deleteNote = async (noteId) => {
+    try {
+      console.log("Deleting note with ID:", noteId);
+      await axios.delete(`https://notesapp-fvg3.vercel.app/notes/${noteId}`);
+      setNotes(notes.filter((note) => note.id !== noteId)); // Remove the deleted note from the state
+    } catch (error) {
+      console.error("Error deleting note:", error);
+    } finally {
+      setDeletingNoteId(null); // Reset deletingNoteId after delete operation completes
+    }
+  };
+  const editNote = (note) => {
+    setEditingNote(note);
+    setNewNote(note.content); // Pre-fill the textarea with the note's content
+    onOpen(); // Open the modal
+  };
+
+  const saveEditedNote = async () => {
+    try {
+      await axios.put(`https://notesapp-fvg3.vercel.app/notes/${editingNote.id}`, {
+        title: editingNote.title,
+        content: newNote,
+      });
+      setEditingNote(null); // Reset editingNote state
+      onClose(); // Close the modal
+      fetchNotes(); // Fetch updated notes
+    } catch (error) {
+      console.error("Error editing note:", error);
+    }
+  };
+
   return (
     <>
       <div className="relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-10">
@@ -81,6 +113,7 @@ export default function Caard() {
                 <Button
                   isIconOnly
                   className="absolute bottom-4 right-5 text-white rounded-full p-1 shadow-md cursor-pointer"
+                  onClick={() => deleteNote(notes.id)}
                 >
                   <Trash size={20} />
                 </Button>
@@ -108,7 +141,7 @@ export default function Caard() {
                     maxRows={3}
                     placeholder="Enter your Notes"
                     size="sm"
-                    value={newNote} 
+                    value={newNote}
                     onChange={(e) => setNewNote(e.target.value)}
                   />
                 </ModalBody>

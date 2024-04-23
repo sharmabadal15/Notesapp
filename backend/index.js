@@ -27,18 +27,21 @@ app.post("/addusers", async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query(
-      "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
+      "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *",
       [username, email, password]
     );
+
+    const newUser = result.rows[0]; // Get the newly inserted user data
     client.release();
 
     console.log("User signed up:", username);
-    res.status(200).json({ message: "Signup successful" });
+    res.status(200).json({ message: "Signup successful", user: newUser }); // Include the user data in the response
   } catch (err) {
     console.error("Error signing up:", err);
     res.status(500).json({ message: "Error signing up" });
   }
 });
+
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 

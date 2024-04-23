@@ -2,13 +2,13 @@
   "version": 2,
   "builds": [
     {
-      "source": "api/index.js",
+      "src": "api/index.js",
       "use": "@now/node"
     }
   ],
   "routes": [
     {
-      "source": "/(.*)",
+      "src": "/(.*)",
       "destination": "/api"
     }
   ]

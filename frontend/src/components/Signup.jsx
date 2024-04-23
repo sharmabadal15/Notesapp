@@ -1,8 +1,13 @@
 import React, { useState } from "react";
 import { Input, Button, Spacer, Link } from "@nextui-org/react";
 import axios from "axios";
+import { useAuth } from "../authentication/AuthContext"; // Import useAuth hook
+import { useNavigate } from "react-router-dom"; // Import useNavigate hook
 
 export default function Signup() {
+  const { login } = useAuth(); // Import the login function from the authentication context
+  const navigate = useNavigate(); // Import the navigate function
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -24,12 +29,22 @@ export default function Signup() {
         "https://notesapp-fvg3.vercel.app/addusers",
         formData
       );
-      console.log(response.data);
-      
+      if (response.data && response.data.message === "Signup successful") {
+        // Signup was successful, proceed with login and redirect
+        const userData = response.data.user; // Extract user data from response
+        login(userData); // Trigger login process with user data
+        navigate("/"); // Redirect to home page
+        console.log("Signup successful:", userData);
+      } else {
+        // Signup failed or response is unexpected
+        console.error("Signup failed:", response.data.message);
+      }
     } catch (error) {
       console.error("Error submitting form:", error);
     }
   };
+  
+  
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto mt-10">
@@ -82,3 +97,4 @@ export default function Signup() {
     </form>
   );
 }
+

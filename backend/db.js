@@ -9,7 +9,7 @@ require('dotenv').config();
 //     port: 5435,
 // });
 const pool = new Pool({
-connectionString : psql "postgres://default:jfSIyqwR4K5E@ep-steep-resonance-a4v94rfr.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require";
+connectionString : "postgres://default:jfSIyqwR4K5E@ep-steep-resonance-a4v94rfr.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require";
    })
 
 pool.on('connect', () => {

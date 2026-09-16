@@ -1,14 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Navbar,
   NavbarBrand,
   NavbarContent,
   NavbarItem,
   Link,
-} from "@nextui-org/react";
-import { AcmeLogo } from "./AcmeLogo.jsx";
-import { useAuth } from "../authentication/AuthContext";
-import {
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
@@ -16,147 +12,138 @@ import {
   DropdownItem,
   Button,
   User,
+  Avatar,
+  AvatarIcon,
 } from "@nextui-org/react";
-import { Avatar, AvatarIcon } from "@nextui-org/react";
+import { useAuth } from "../authentication/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { LogOut, FileText } from "react-feather";
 
 export default function Nav() {
-  const { isLoggedIn, setIsLoggedIn,user, setUser} = useAuth();
-  const [notes, setNotes] = useState([]);
+  const { isLoggedIn, user, logout } = useAuth();
+  const navigate = useNavigate();
 
-  // const handleLogout = () => {
-  //   setIsLoggedIn(false);
-  //   setUser(null);
-  //   setNotes([]);
-  // };
-  
   const handleLogout = () => {
-    localStorage.setItem('user',null); // Remove user data from localStorage
-    localStorage.setItem('isLoggedIn', false); // Set isLoggedIn to false in localStorage
-        setNotes([]);
-        window.location.reload();
-
+    logout();
+    navigate("/login");
   };
 
   return (
-    <>
-      <Navbar isBordered>
-        <NavbarBrand>
-          <AcmeLogo as={Link} href="/" />
-          <Link href="/" className="font-bold text-inherit">
-            NotesApp
-          </Link>
-        </NavbarBrand>
+    <Navbar
+      isBordered={false}
+      isBlurred={false}
+      className="bg-transparent border-b border-white/5"
+      maxWidth="full"
+      height="4rem"
+      classNames={{
+        wrapper: "max-w-[1200px] px-4 sm:px-6 lg:px-8",
+      }}
+    >
+      <NavbarBrand className="gap-2">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center">
+          <FileText size={16} className="text-white" />
+        </div>
+        <Link href="/" className="font-semibold text-white text-lg tracking-tight">
+          NotesApp
+        </Link>
+      </NavbarBrand>
 
-        <NavbarContent className="hidden sm:flex gap-4" justify="center">
+      <NavbarContent justify="end" className="gap-3">
+        {isLoggedIn ? (
           <NavbarItem>
-            <Link color="foreground" href="#">
-              
-            </Link>
-          </NavbarItem>
-          <NavbarItem isActive>
-            <Link href="#" aria-current="page">
-              
-            </Link>
-          </NavbarItem>
-          <NavbarItem>
-            <Link color="foreground" href="#">
-              
-            </Link>
-          </NavbarItem>
-        </NavbarContent>
-        <NavbarContent justify="end">
-          {isLoggedIn ? (
-            <NavbarItem>
-              <Dropdown
-                showArrow
-                className="dark bg-black " //very important line for dark theme
-                radius="sm"
-                classNames={{
-                  base: "before:bg-default-200",
-                  content: "p-0 border-small border-divider bg-background",
+            <Dropdown
+              showArrow
+              className="dark"
+              radius="lg"
+              classNames={{
+                base: "before:bg-white/10",
+                content: "p-1 border border-white/10 bg-zinc-900/90 backdrop-blur-xl",
+              }}
+            >
+              <DropdownTrigger>
+                <button className="flex items-center gap-2 px-2 py-1 rounded-full hover:bg-white/5 transition-colors outline-none">
+                  <Avatar
+                    icon={<AvatarIcon />}
+                    size="sm"
+                    classNames={{
+                      base: "bg-gradient-to-br from-violet-500 to-blue-500",
+                      icon: "text-white/90",
+                    }}
+                  />
+                  <span className="text-sm text-white/80 hidden sm:inline">
+                    {user?.username || "User"}
+                  </span>
+                </button>
+              </DropdownTrigger>
+              <DropdownMenu
+                aria-label="User menu"
+                disabledKeys={["profile"]}
+                className="p-2"
+                itemClasses={{
+                  base: [
+                    "rounded-lg",
+                    "text-white/70",
+                    "transition-all",
+                    "data-[hover=true]:text-white",
+                    "data-[hover=true]:bg-white/5",
+                  ],
                 }}
               >
-                <DropdownTrigger>
-                  <Button isIconOnly disableRipple radius="full">
-                    {" "}
-                    <Avatar
-                      icon={<AvatarIcon />}
+                <DropdownSection aria-label="Profile" showDivider>
+                  <DropdownItem
+                    isReadOnly
+                    key="profile"
+                    className="h-14 gap-2 opacity-100"
+                  >
+                    <User
+                      name={user?.username || "User"}
+                      description={user?.email || ""}
                       classNames={{
-                        base: "bg-gradient-to-br from-[#FFB457] to-[#FF705B]",
-                        icon: "text-black/80",
+                        name: "text-white/90 font-medium",
+                        description: "text-white/50 text-xs",
                       }}
                     />
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu
-                  aria-label="Custom item styles"
-                  disabledKeys={["profile"]}
-                  className="p-3"
-                  itemClasses={{
-                    base: [
-                      "rounded-md",
-                      "text-default-500",
-                      "transition-opacity",
-                      "data-[hover=true]:text-foreground",
-                      "data-[hover=true]:bg-default-100",
-                      "dark:data-[hover=true]:bg-default-50",
-                      "data-[selectable=true]:focus:bg-default-50",
-                      "data-[pressed=true]:opacity-70",
-                      "data-[focus-visible=true]:ring-default-500",
-                    ],
-                  }}
-                >
-                  <DropdownSection aria-label="Profile & Actions" showDivider>
-                    <DropdownItem
-                      isReadOnly
-                      key="profile"
-                      className="h-14 gap-2"
-                    >
-                      <User
-                        // name={user.username}
-                        name="Test"
-                        classNames={{
-                          name: "text-default-600",
-                          description: "text-default-500",
-                        }}
-                      />
-                    </DropdownItem>
-                    <DropdownItem key="dashboard">Dashboard</DropdownItem>
-                    <DropdownItem key="settings">Settings</DropdownItem>
-                  </DropdownSection>
+                  </DropdownItem>
+                </DropdownSection>
 
-                  <DropdownSection aria-label="Preferences" showDivider>
-                    <DropdownItem key="quick_search" shortcut="⌘K">
-                      Quick search
-                    </DropdownItem>
-                  </DropdownSection>
-
-                  <DropdownSection aria-label="Help & Feedback">
-                    <DropdownItem key="help_and_feedback">
-                      Help & Feedback
-                    </DropdownItem>
-                    <DropdownItem key="logout" onClick={handleLogout}>
-                      Log Out
-                    </DropdownItem>
-                  </DropdownSection>
-                </DropdownMenu>
-              </Dropdown>
+                <DropdownSection aria-label="Actions">
+                  <DropdownItem
+                    key="logout"
+                    onPress={handleLogout}
+                    startContent={<LogOut size={14} />}
+                    className="text-red-400 data-[hover=true]:text-red-300"
+                  >
+                    Log Out
+                  </DropdownItem>
+                </DropdownSection>
+              </DropdownMenu>
+            </Dropdown>
+          </NavbarItem>
+        ) : (
+          <>
+            <NavbarItem>
+              <Link
+                href="/login"
+                className="text-white/60 hover:text-white transition-colors text-sm"
+              >
+                Login
+              </Link>
             </NavbarItem>
-          ) : (
-            <>
-              <NavbarItem className="hidden lg:flex">
-                <Link href="/login">Login</Link>
-              </NavbarItem>
-              <NavbarItem>
-                <Button color="primary" href="/signup" as={Link} variant="flat">
-                  Sign Up
-                </Button>
-              </NavbarItem>
-            </>
-          )}
-        </NavbarContent>
-      </Navbar>
-      <div className="h-10"></div>
-    </>
+            <NavbarItem>
+              <Button
+                color="primary"
+                href="/signup"
+                as={Link}
+                size="sm"
+                radius="full"
+                className="bg-gradient-to-r from-violet-600 to-blue-600 text-white font-medium px-5 shadow-lg shadow-violet-500/20"
+              >
+                Sign Up
+              </Button>
+            </NavbarItem>
+          </>
+        )}
+      </NavbarContent>
+    </Navbar>
   );
 }

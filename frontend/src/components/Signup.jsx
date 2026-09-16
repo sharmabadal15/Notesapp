@@ -1,100 +1,158 @@
 import React, { useState } from "react";
-import { Input, Button, Spacer, Link } from "@nextui-org/react";
-import axios from "axios";
-import { useAuth } from "../authentication/AuthContext"; // Import useAuth hook
-import { useNavigate } from "react-router-dom"; // Import useNavigate hook
+import { Input, Button, Link } from "@nextui-org/react";
+import api from "../api";
+import { useAuth } from "../authentication/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { User, Mail, Lock, ArrowRight } from "react-feather";
 
 export default function Signup() {
-  const { login } = useAuth(); // Import the login function from the authentication context
-  const navigate = useNavigate(); // Import the navigate function
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
   });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
+    if (!formData.username || !formData.email || !formData.password) {
+      setError("All fields are required");
+      return;
+    }
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    setLoading(true);
     try {
-      const response = await axios.post(
-        "https://notesapp-fvg3.vercel.app/addusers",
-        formData
-      );
-      if (response.data && response.data.message === "Signup successful") {
-        // Signup was successful, proceed with login and redirect
-        const userData = response.data.user; // Extract user data from response
-        login(userData); // Trigger login process with user data
-        navigate("/"); // Redirect to home page
-        console.log("Signup successful:", userData);
+      const response = await api.post("/addusers", formData);
+      if (response.data?.message === "Signup successful") {
+        login(response.data.user, response.data.token);
+        navigate("/");
       } else {
-        // Signup failed or response is unexpected
-        console.error("Signup failed:", response.data.message);
+        setError("Signup failed. Please try again.");
       }
-    } catch (error) {
-      console.error("Error submitting form:", error);
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Signup failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
     }
   };
-  
-  
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto mt-10">
-      <div className="mb-4">
-        <Input
-          size="sm"
-          type="text"
-          label="UserName"
-          name="username"
-          value={formData.username}
-          onChange={handleChange}
-        />
-      </div>
-      <div className="mb-4">
-        <Input
-          size="sm"
-          type="text"
-          label="Email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-        />
-      </div>
-      <div className="mb-4">
-        <Input
-          size="sm"
-          label="Password"
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-        />
-      </div>
-      <div className="flex justify-end">
-        <Button
-          type="button"
-          auto
-          color="error"
-          className="mr-2 hover:bg-red-600"
-          href="/"
-          as={Link}
+    <div className="flex items-center justify-center min-h-[80vh] px-4">
+      <div className="w-full max-w-md animate-fade-in-up">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center mx-auto mb-4">
+            <User size={20} className="text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-2">Create account</h1>
+          <p className="text-white/40 text-sm">
+            Start organizing your thoughts today
+          </p>
+        </div>
+
+        {/* Form card */}
+        <form
+          onSubmit={handleSubmit}
+          className="glass rounded-2xl p-8 space-y-5"
         >
-          Cancel
-        </Button>
-        <Button type="submit" auto className="mr-2 hover:bg-blue-600">
-          Sign Up
-        </Button>
+          {error && (
+            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+              {error}
+            </div>
+          )}
+
+          <Input
+            type="text"
+            label="Username"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            variant="bordered"
+            size="lg"
+            startContent={<User size={16} className="text-white/30" />}
+            classNames={{
+              inputWrapper:
+                "border-white/10 hover:border-white/20 bg-white/5 group-data-[focus=true]:border-violet-500/50",
+              input: "text-white/90",
+              label: "text-white/40",
+            }}
+          />
+
+          <Input
+            type="email"
+            label="Email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            variant="bordered"
+            size="lg"
+            startContent={<Mail size={16} className="text-white/30" />}
+            classNames={{
+              inputWrapper:
+                "border-white/10 hover:border-white/20 bg-white/5 group-data-[focus=true]:border-violet-500/50",
+              input: "text-white/90",
+              label: "text-white/40",
+            }}
+          />
+
+          <Input
+            type="password"
+            label="Password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            variant="bordered"
+            size="lg"
+            startContent={<Lock size={16} className="text-white/30" />}
+            classNames={{
+              inputWrapper:
+                "border-white/10 hover:border-white/20 bg-white/5 group-data-[focus=true]:border-violet-500/50",
+              input: "text-white/90",
+              label: "text-white/40",
+            }}
+          />
+
+          <Button
+            type="submit"
+            isLoading={loading}
+            size="lg"
+            radius="full"
+            className="w-full bg-gradient-to-r from-violet-600 to-blue-600 text-white font-medium shadow-lg shadow-violet-500/20 mt-2"
+            endContent={!loading && <ArrowRight size={16} />}
+          >
+            Create Account
+          </Button>
+
+          <p className="text-center text-sm text-white/30 pt-2">
+            Already have an account?{" "}
+            <Link
+              href="/login"
+              size="sm"
+              className="text-violet-400 hover:text-violet-300"
+            >
+              Sign in
+            </Link>
+          </p>
+        </form>
       </div>
-      <Spacer y={2} />
-    </form>
+    </div>
   );
 }
-

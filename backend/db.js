@@ -26,9 +26,18 @@ async function createTable() {
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
         title VARCHAR(255) NOT NULL,
         content TEXT,
+        color VARCHAR(20) DEFAULT 'default',
+        pinned BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
+    `);
+    // Add columns if table already exists (safe migration)
+    await client.query(`
+      ALTER TABLE notes ADD COLUMN IF NOT EXISTS color VARCHAR(20) DEFAULT 'default'
+    `);
+    await client.query(`
+      ALTER TABLE notes ADD COLUMN IF NOT EXISTS pinned BOOLEAN DEFAULT FALSE
     `);
     client.release();
     console.log("Tables created or already exist");

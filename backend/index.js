@@ -149,7 +149,7 @@ app.post("/login", async (req, res) => {
 
 // Create note
 app.post("/notes", authenticateToken, async (req, res) => {
-  const { title, content } = req.body;
+  const { title, content, color } = req.body;
   const userId = req.user.id;
 
   if (!title || !title.trim()) {
@@ -159,8 +159,8 @@ app.post("/notes", authenticateToken, async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query(
-      "INSERT INTO notes (user_id, title, content) VALUES ($1, $2, $3) RETURNING *",
-      [userId, title.trim(), content || ""]
+      "INSERT INTO notes (user_id, title, content, color) VALUES ($1, $2, $3, $4) RETURNING *",
+      [userId, title.trim(), content || "", color || "default"]
     );
     client.release();
 
@@ -172,16 +172,27 @@ app.post("/notes", authenticateToken, async (req, res) => {
   }
 });
 
-// Get user's notes
+// Get user's notes (pinned first, then by updated_at)
 app.get("/notes", authenticateToken, async (req, res) => {
   const userId = req.user.id;
+  const { search } = req.query;
 
   try {
     const client = await pool.connect();
-    const result = await client.query(
-      "SELECT * FROM notes WHERE user_id = $1 ORDER BY updated_at DESC",
-      [userId]
-    );
+    let result;
+
+    if (search && search.trim()) {
+      const searchTerm = `%${search.trim()}%`;
+      result = await client.query(
+        "SELECT * FROM notes WHERE user_id = $1 AND (title ILIKE $2 OR content ILIKE $2) ORDER BY pinned DESC, updated_at DESC",
+        [userId, searchTerm]
+      );
+    } else {
+      result = await client.query(
+        "SELECT * FROM notes WHERE user_id = $1 ORDER BY pinned DESC, updated_at DESC",
+        [userId]
+      );
+    }
     client.release();
 
     res.status(200).json(result.rows);
@@ -194,7 +205,7 @@ app.get("/notes", authenticateToken, async (req, res) => {
 // Update note
 app.put("/notes/:id", authenticateToken, async (req, res) => {
   const { id } = req.params;
-  const { title, content } = req.body;
+  const { title, content, color } = req.body;
   const userId = req.user.id;
 
   if (!title || !title.trim()) {
@@ -204,8 +215,8 @@ app.put("/notes/:id", authenticateToken, async (req, res) => {
   try {
     const client = await pool.connect();
     const result = await client.query(
-      "UPDATE notes SET title = $1, content = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 AND user_id = $4",
-      [title.trim(), content || "", id, userId]
+      "UPDATE notes SET title = $1, content = $2, color = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4 AND user_id = $5",
+      [title.trim(), content || "", color || "default", id, userId]
     );
     client.release();
 
@@ -218,6 +229,33 @@ app.put("/notes/:id", authenticateToken, async (req, res) => {
   } catch (err) {
     console.error("Error updating note:", err);
     res.status(500).json({ message: "Error updating note" });
+  }
+});
+
+// Toggle pin
+app.patch("/notes/:id/pin", authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      "UPDATE notes SET pinned = NOT pinned, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND user_id = $2 RETURNING pinned",
+      [id, userId]
+    );
+    client.release();
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Note not found" });
+    }
+
+    res.status(200).json({
+      message: result.rows[0].pinned ? "Note pinned" : "Note unpinned",
+      pinned: result.rows[0].pinned,
+    });
+  } catch (err) {
+    console.error("Error toggling pin:", err);
+    res.status(500).json({ message: "Error toggling pin" });
   }
 });
 
